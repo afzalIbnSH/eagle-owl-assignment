@@ -75,15 +75,7 @@ def group_customers(data):
     return groups, non_repeat_customers
 
 
-if __name__ == "__main__":
-    data, total_orders, total_amount = structure_data()
-    print(f"Total orders => {total_orders}")
-    print(f"Total amount of orders => {total_amount}")
-
-    groups, non_repeat_customers = group_customers(data)
-
-    print(f"Customers who never reordered => {non_repeat_customers}")
-
+def generate_html(groups, distinct_customers_count):
     table = """
     <table width="100%" border=1>
         <tr>
@@ -105,7 +97,7 @@ if __name__ == "__main__":
 
     bar_chart = '<table border="0" width="100%" cellpadding = "0" cellspacing="0">'
     for number_of_orders, count in groups.items():
-        percentage = round((100 / len(data)) * count, 2)
+        percentage = round((100 / distinct_customers_count) * count, 2)
         bar_chart = (
             bar_chart
             + f"""
@@ -123,17 +115,26 @@ if __name__ == "__main__":
         """
         )
     bar_chart = bar_chart + "</table>"
+    return f"""
+        <h1>Distribution of customers who ordered exactly once, exactly twice, and so on up to 4 orders and the rest as 5 orders and above</h1>
+        <br>
+        <h2>Table:</h2>
+        {table}
+        <br>
+        <h2>Bar chart:</h2>
+        {bar_chart}
+    """
+
+
+if __name__ == "__main__":
+    data, total_orders, total_amount = structure_data()
+    print(f"Total orders => {total_orders}")
+    print(f"Total amount of orders => {total_amount}")
+
+    groups, non_repeat_customers = group_customers(data)
+
+    print(f"Customers who never reordered => {non_repeat_customers}")
 
     with open("customerdata.html", "w") as f:
-        f.write(
-            f"""
-            <h1>Distribution of customers who ordered exactly once, exactly twice, and so on up to 4 orders and the rest as 5 orders and above</h1>
-            <br>
-            <h2>Table:</h2>
-            {table}
-            <br>
-            <h2>Bar chart:</h2>
-            {bar_chart}
-        """
-        )
+        f.write(generate_html(groups, len(data)))
     print(f"HTML => Open file://{getcwd()}/{f.name}")
